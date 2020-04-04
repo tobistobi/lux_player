@@ -1,7 +1,5 @@
- 
-// gcc -o gtk_player gtk_player.c `pkg-config --libs gtk+-3.0 libvlc` `pkg-config --cflags gtk+-3.0 libvlc`
+// Thanks to all code and dev sources for enabling this. 
 // 修改自：http://git.videolan.org/?p=vlc.git;a=blob;f=doc/libvlc/gtk_player.c
-
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -13,7 +11,7 @@
 #include <vlc/vlc.h>
 #include <X11/Xlib.h>
 
-#define BORDER_WIDTH 6
+//#define BORDER_WIDTH 6
 
 void destroy(GtkWidget *widget, gpointer data);
 void player_widget_on_realize(GtkWidget *widget, gpointer data);
@@ -50,6 +48,8 @@ GtkWidget *window,
               *hbuttonbox,
               *stop_button,
 	      *g_lbl_hello;
+	      
+GdkRectangle workarea = {0};
 
 float video_length, current_play_time, media_position, last_position = -5.0;
 char media_pos_str[255];
@@ -205,10 +205,12 @@ void read_config()
 
 void init_run()
 {
+    //query primary screen resolution
+    gdk_monitor_get_geometry(gdk_display_get_primary_monitor(gdk_display_get_default()), &workarea);
 
     // setup window
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(window), 2560, 1440);
+    gtk_window_set_default_size(GTK_WINDOW(window), workarea.width, workarea.height);
     g_signal_connect(window, "destroy", G_CALLBACK(destroy), NULL);
     gtk_container_set_border_width (GTK_CONTAINER (window), 0);
     gtk_window_set_title(GTK_WINDOW(window), "LUXOOM");
@@ -301,16 +303,16 @@ void init_run()
 
 int main(int argc, char *argv[]) {
 
-
+    //run once at startup
     if (!startup)
 	{
 	    startup = 1;
-	    XInitThreads();
+	    XInitThreads(); //without the XInitThreads() the video doesn't scale large enough due to performance issues
 	    gtk_init (&argc, &argv);
 	    init_run();
 	}
 	
-    //making the control loop
+    //control loop
      while (1)
     {   
        while (gtk_events_pending())
@@ -325,9 +327,9 @@ int main(int argc, char *argv[]) {
 	    gcvt(media_position, 10, media_pos_str);
 	    if (idle_status)
 		{
-		    strcpy(debug_str, "Idle Mode. Play Pos : ");
+		    sprintf(debug_str, "W: %u H: %u - Idle Mode. Play Pos : ", workarea.width, workarea.height);
 		} else {
-		    strcpy(debug_str, "Content Mode. Plaz Pos : ");
+		    sprintf(debug_str, "W: %u H: %u - Content Mode. Play Pos : ", workarea.width, workarea.height);
 		}
 	    strcat(debug_str, media_pos_str);
 	    gtk_label_set_text(GTK_LABEL(g_lbl_hello), debug_str);
