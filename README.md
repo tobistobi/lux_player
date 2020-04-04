@@ -11,4 +11,6 @@ features:<br>
 - Fullscreen video playback, loops over black<br>
 - Debug mode<br>
 
+<img src="scheme/GPIO_scheme.jpg" alt="Circuit scheme"><br>
+
 will be happy if anyone has suggestions how to improve the code! :)
