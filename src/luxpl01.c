@@ -11,8 +11,6 @@
 #include <vlc/vlc.h>
 #include <X11/Xlib.h>
 
-//#define BORDER_WIDTH 6
-
 void destroy(GtkWidget *widget, gpointer data);
 void player_widget_on_realize(GtkWidget *widget, gpointer data);
 void on_open(GtkWidget *widget, gpointer data);
@@ -51,7 +49,7 @@ GtkWidget *window,
 	      
 GdkRectangle workarea = {0};
 
-float video_length, current_play_time, media_position, last_position = -5.0;
+float video_length, current_play_time, media_position;
 char media_pos_str[255];
 
 //init vars for GPIO states
@@ -61,11 +59,11 @@ int idle_status = 1;
 int ended = 0;
 
 // init vars for config file
-char fn_idle[255];
-char fn_content[255];
+char fn_idle[100];
+char fn_content[100];
 int wait_thr;
 int is_debug;
-char debug_str[255];
+char debug_str[512];
 
 //setup startup mode
 int startup = 0;
@@ -81,7 +79,6 @@ void player_widget_on_realize(GtkWidget *widget, gpointer data) {
     libvlc_media_player_set_xwindow((libvlc_media_player_t*)data, GDK_WINDOW_XID(gtk_widget_get_window(widget)));
     
 }
-
 
 void on_open(GtkWidget *widget, gpointer data) {
     GtkWidget *dialog;
@@ -122,7 +119,6 @@ void on_stop(GtkWidget *widget, gpointer data) {
     pause_player();
     libvlc_media_player_stop(media_player);
 }
-
 
 void on_value_change(GtkWidget *widget, gpointer data)
 {
@@ -178,7 +174,7 @@ void sensor_read()
 void read_config()
 {
     FILE *fp;
-    char buff[255];
+    char buff[100];
 
     fp = fopen("luxpl.config", "r");
     fscanf(fp, "%s", buff);
@@ -327,11 +323,11 @@ int main(int argc, char *argv[]) {
 	    gcvt(media_position, 10, media_pos_str);
 	    if (idle_status)
 		{
-		    sprintf(debug_str, "W: %u H: %u - Idle Mode. Play Pos : ", workarea.width, workarea.height);
+		    sprintf(debug_str, "W: %u H: %u - %s - Idle Mode. Play Pos : %s ", workarea.width, workarea.height, fn_idle, media_pos_str);
 		} else {
-		    sprintf(debug_str, "W: %u H: %u - Content Mode. Play Pos : ", workarea.width, workarea.height);
+		    sprintf(debug_str, "W: %u H: %u - %s - Content Mode. Play Pos : %s ", workarea.width, workarea.height, fn_content, media_pos_str);
 		}
-	    strcat(debug_str, media_pos_str);
+	    //strcat(debug_str, media_pos_str);
 	    gtk_label_set_text(GTK_LABEL(g_lbl_hello), debug_str);
 	}
 	
